@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI가 1쪽 보고서를 만드는 과정 · 시연</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --navy:#0B2545; --ink:#1F2937; --teal:#0E9F9A; --teal-l:#DDF3F2; --amber:#F59E0B; --amber-l:#FEF3C7;
+  --gray:#6B7280; --line:#D7DEE7; --bg:#F4F6F9; --card:#fff; --red:#DC2626; --code:#111827;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Pretendard,"Malgun Gothic",system-ui,sans-serif;font-size:16px;line-height:1.55}
+a{color:var(--teal)}
+header{background:var(--navy);color:#fff;padding:18px 28px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;border-left:8px solid var(--amber)}
+header h1{font-size:22px;margin:0;font-weight:800}
+header .sub{color:#CBD5E1;font-size:14px}
+nav.tabs{margin-left:auto;display:flex;gap:6px}
+nav.tabs button{background:transparent;color:#CBD5E1;border:1px solid #33507a;border-radius:999px;padding:7px 16px;font:inherit;font-size:14px;cursor:pointer}
+nav.tabs button.on{background:var(--amber);color:#fff;border-color:var(--amber);font-weight:700}
+main{max-width:1500px;margin:0 auto;padding:20px 24px 60px}
+.panel{display:none}.panel.on{display:block}
+
+/* controls */
+.controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.controls button{font:inherit;font-size:14px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 14px;cursor:pointer}
+.controls button.primary{background:var(--teal);border-color:var(--teal);color:#fff;font-weight:700}
+.controls button:disabled{opacity:.4;cursor:default}
+.progress{flex:1;min-width:200px;height:8px;background:#E5E9F0;border-radius:99px;overflow:hidden}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--amber));width:0;transition:width .35s}
+.stepno{font-size:13px;color:var(--gray);min-width:72px;text-align:right}
+label.tog{font-size:13px;color:var(--gray);display:flex;align-items:center;gap:6px;cursor:pointer}
+
+.grid{display:grid;grid-template-columns:minmax(300px,1fr) minmax(360px,1.25fr) minmax(320px,1fr);gap:16px;align-items:start}
+@media (max-width:1150px){.grid{grid-template-columns:1fr 1fr}.col-doc{grid-column:1/-1}}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+.col{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;max-height:calc(100vh - 190px);min-height:520px}
+.col h2{font-size:14px;margin:0;padding:12px 16px;border-bottom:1px solid var(--line);color:var(--navy);display:flex;align-items:center;gap:8px;background:#FAFBFC}
+.col h2 .dot{width:9px;height:9px;border-radius:50%}
+.feed{padding:14px;overflow:auto;flex:1;scroll-behavior:smooth}
+
+/* chat */
+.msg{border-radius:12px;padding:11px 14px;margin-bottom:10px;font-size:14.5px;animation:pop .3s ease}
+.msg.user{background:var(--navy);color:#fff;margin-left:18px}
+.msg.user pre{white-space:pre-wrap;font:inherit;margin:0}
+.msg.ai{background:var(--bg);border:1px solid var(--line);margin-right:18px}
+.msg .who{font-size:11.5px;font-weight:700;letter-spacing:.02em;margin-bottom:4px;opacity:.75}
+.msg.think{background:#fff;border:1px dashed #9FB3C8;color:#334155;font-size:13.5px}
+.msg.think .who{color:#0369A1}
+.msg.alert{background:#FEF2F2;border:1px solid #FCA5A5}
+.msg.ok{background:#ECFDF5;border:1px solid #6EE7B7}
+table.mini{border-collapse:collapse;width:100%;font-size:13px;margin-top:6px}
+table.mini th,table.mini td{border:1px solid var(--line);padding:5px 7px;text-align:left;vertical-align:top}
+table.mini th{background:var(--teal-l);white-space:nowrap}
+
+/* tool log */
+.call{border-radius:12px;margin-bottom:12px;overflow:hidden;border:1px solid var(--line);animation:pop .3s ease}
+.call .hd{display:flex;align-items:center;gap:8px;padding:8px 12px;font-size:12.5px;font-weight:700}
+.call.use .hd{background:var(--amber-l);color:#92400E}
+.call.res .hd{background:var(--teal-l);color:#0F5F5C}
+.call.res.bad .hd{background:#FEE2E2;color:#991B1B}
+.call pre{margin:0;background:var(--code);color:#E5E7EB;padding:11px 13px;font:12.5px/1.55 Consolas,"D2Coding",monospace;white-space:pre-wrap;word-break:break-all}
+.call pre .k{color:#7DD3FC}.call pre .s{color:#FCD34D}.call pre .w{color:#FCA5A5}.call pre .g{color:#86EFAC}
+.badge{display:none;margin-left:auto;font-size:11px;font-weight:700;border-radius:99px;padding:2px 9px;background:#fff;border:1px solid currentColor}
+body.concept .badge{display:inline-block}
+.empty{color:var(--gray);font-size:13.5px;text-align:center;padding:40px 10px}
+
+/* doc */
+.docview{padding:14px;overflow:auto;flex:1;text-align:center}
+.docview img{max-width:100%;border:1px solid var(--line);border-radius:6px;box-shadow:0 4px 18px rgba(11,37,69,.08);cursor:zoom-in;background:#fff}
+.docmeta{font-size:13px;color:var(--gray);margin:0 0 10px;text-align:left}
+.chip{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:3px 10px;margin:0 4px 6px 0}
+.chip.red{background:#FEE2E2;color:#991B1B}.chip.green{background:#D1FAE5;color:#065F46}.chip.amber{background:var(--amber-l);color:#92400E}.chip.gray{background:#E5E7EB;color:#374151}
+.doclabel{font-size:12px;color:var(--gray);margin:6px 0 14px}
+.docstack img+.doclabel{margin-bottom:18px}
+
+@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* concept strip */
+.strip{display:none;margin:0 0 14px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:13.5px}
+body.concept .strip{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.strip b{color:var(--navy)}
+.strip span{padding:3px 10px;border-radius:99px;background:var(--bg)}
+.strip span.on{background:var(--amber);color:#fff;font-weight:700}
+
+/* prompt tab */
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin-bottom:16px}
+.card h3{margin:0 0 10px;color:var(--navy);font-size:18px}
+.promptbox{position:relative;background:var(--code);color:#E5E7EB;border-radius:12px;padding:18px 20px;font:14.5px/1.75 Pretendard,"Malgun Gothic",sans-serif;white-space:pre-wrap}
+.copy{position:absolute;top:10px;right:10px;background:var(--amber);color:#fff;border:0;border-radius:8px;padding:6px 12px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:900px){.two{grid-template-columns:1fr}}
+ul.clean{margin:0;padding-left:18px}ul.clean li{margin:4px 0}
+code{font-family:Consolas,monospace;background:#EEF2F6;padding:1px 6px;border-radius:5px;font-size:.92em}
+.dl a{display:inline-block;margin:4px 8px 4px 0;padding:9px 14px;border-radius:10px;background:var(--teal);color:#fff;text-decoration:none;font-weight:700;font-size:14px}
+.dl a.alt{background:#fff;color:var(--navy);border:1px solid var(--line)}
+footer{color:var(--gray);font-size:12.5px;text-align:center;padding:20px}
+
+/* lightbox */
+#lb{position:fixed;inset:0;background:rgba(11,37,69,.85);display:none;align-items:center;justify-content:center;z-index:50;cursor:zoom-out;padding:20px}
+#lb img{max-height:95vh;max-width:95vw;background:#fff;border-radius:6px}
+</style>
+</head>
+<body class="concept">
+<header>
+  <div>
+    <h1>AI가 1쪽 보고서를 만드는 과정</h1>
+    <div class="sub">주제: 오늘 강의의 강의계획 · 도구: kordoc 4.24.0 (MCP 서버 / CLI) · 실제 실행 기록 재생</div>
+  </div>
+  <nav class="tabs">
+    <button data-tab="play" class="on">① 시연 재생</button>
+    <button data-tab="prompt">② 프롬프트</button>
+    <button data-tab="result">③ 결과물</button>
+  </nav>
+</header>
+
+<main>
+<section class="panel on" id="play">
+  <div class="controls">
+    <button id="first">⏮ 처음</button>
+    <button id="prev">◀ 이전</button>
+    <button id="next" class="primary">다음 ▶</button>
+    <button id="auto">▶ 자동 재생</button>
+    <div class="progress"><i id="bar"></i></div>
+    <div class="stepno" id="stepno">0 / 0</div>
+    <label class="tog"><input type="checkbox" id="concept" checked> 개념 표시</label>
+  </div>
+  <div class="strip" id="strip">
+    <b>Tool Calling 4단계</b>
+    <span data-s="1">1 컨텍스트 조립</span>
+    <span data-s="2">2 AI의 도구 선택 (tool_use)</span>
+    <span data-s="3">3 프로그램이 실행 (tool_result)</span>
+    <span data-s="4">4 최종 답변</span>
+    <span style="margin-left:auto;background:none;color:var(--gray)">키보드: → 다음 · ← 이전 · Space 자동</span>
+  </div>
+  <div class="grid">
+    <div class="col"><h2><span class="dot" style="background:var(--navy)"></span>대화 · AI의 생각</h2><div class="feed" id="chat"></div></div>
+    <div class="col"><h2><span class="dot" style="background:var(--amber)"></span>도구 호출 로그 (tool_use / tool_result)</h2><div class="feed" id="log"><div class="empty">AI가 도구를 부르면 여기에 쌓입니다</div></div></div>
+    <div class="col col-doc"><h2><span class="dot" style="background:var(--teal)"></span>문서 미리보기 (render 결과)</h2><div class="docview" id="doc"><div class="empty">아직 만든 문서가 없습니다</div></div></div>
+  </div>
+</section>
+
+<section class="panel" id="prompt">
+  <div class="card">
+    <h3>시연용 프롬프트 (그대로 복사해서 Claude Code · Codex에 붙여넣기)</h3>
+    <div class="promptbox" id="ptext">오늘 강의 「AI 활용 실무교육(Tool Calling·MCP·GitHub)」의 강의계획을 1쪽 보고서로 만들어줘.
+
+1. 이 폴더의 lecture.pptx를 kordoc으로 읽고, 파트별 내용과 시간을 뽑아줘.
+2. 구성: 추진 배경 → 교육 개요(일시·대상·강사·방식) → 교육 내용(표: 구분·주요 내용·시간, 합계 행) → 기대 효과 및 향후 계획
+3. 제목 바로 아래 요약은 "~하고자 함" 한 문장.
+4. 자료에 없는 일시·장소는 지어내지 말고 "추후 확정"으로 써.
+5. kordoc 공문서 게이트(보고서 프리셋)로 검수하고, 지적이 있으면 고쳐서 다시 검수해.
+6. 통과하면 보고서 프리셋 HWPX(강의계획.hwpx)로 만들고, render로 PNG를 떠서 원고와 대조해 봐. 1쪽을 넘거나 빠진 글자가 있으면 고쳐서 다시 만들어.
+7. 끝나면 고친 횟수와 이유를 표로 정리하고, 최종 PNG를 보여줘.</div>
+    <button class="copy" id="copybtn" style="position:static;margin-top:10px">프롬프트 복사</button>
+  </div>
+  <div class="two">
+    <div class="card">
+      <h3>이 프롬프트가 잘 먹히는 이유</h3>
+      <ul class="clean">
+        <li><b>입력 파일을 지정</b> — "lecture.pptx를 kordoc으로" → AI가 어떤 도구를 부를지 바로 정함</li>
+        <li><b>구성 순서를 고정</b> — 왜(배경) → 무엇(개요·내용) → 어떻게(효과·계획)</li>
+        <li><b>지어내지 말 것을 명시</b> — 일시·장소는 "추후 확정"</li>
+        <li><b>검수 → 수정 반복을 지시</b> — 조건부 호출 패턴이 돌아감</li>
+        <li><b>눈으로 확인 지시</b> — render 결과와 원고 대조 (아래 실제 사례 참고)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>미리 준비</h3>
+      <ul class="clean">
+        <li>Node.js 20 이상, <code>npx -y kordoc setup</code> 으로 MCP 등록</li>
+        <li>작업 폴더에 <code>lecture.pptx</code> (강의 자료) 넣기</li>
+        <li>(선택) 다듬기용 claw-hwp: <code>claude plugin install claw-hwp@claw-hwp</code></li>
+        <li>네트워크·설치 문제 대비: 이 페이지의 ① 시연 재생을 백업으로</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="result">
+  <div class="two">
+    <div class="card">
+      <h3>최종 결과 (1쪽 · 게이트 통과 · 구조 검증 통과)</h3>
+      <img src="assets/v3_p1.png" alt="최종 1쪽 보고서" style="width:100%;border:1px solid var(--line);border-radius:6px;cursor:zoom-in" class="zoom">
+    </div>
+    <div>
+      <div class="card">
+        <h3>내려받기</h3>
+        <div class="dl">
+          <a href="files/lecture-plan.hwpx" download>최종 HWPX</a>
+          <a href="files/plan_final.md" class="alt" download>최종 원고 (Markdown)</a>
+          <a href="files/plan_v1.md" class="alt" download>1차 원고 (Markdown)</a>
+        </div>
+      </div>
+      <div class="card">
+        <h3>고친 횟수와 이유</h3>
+        <table class="mini">
+          <tr><th>차수</th><th>발견된 문제</th><th>누가 찾았나</th><th>조치</th></tr>
+          <tr><td>1차</td><td>배경에 사실·수치 없음, 기대효과에 목표치 없음</td><td>lint 게이트 (구성 검수)</td><td>배경에 날짜 사실, 효과에 목표치 추가</td></tr>
+          <tr><td>1차</td><td>□ 항목 4개가 한 줄 초과</td><td>generate 경고</td><td>문장 축약</td></tr>
+          <tr><td>1차</td><td>본문의 "MCP"가 앞 단어와 함께 사라짐</td><td>render 이미지 대조</td><td>본문은 "도구 연결 표준"으로 표기 (표 안은 정상)</td></tr>
+          <tr><td>2차</td><td>2쪽으로 2줄 넘침</td><td>render (2페이지)</td><td>항목 2개 정리 → 1쪽</td></tr>
+          <tr><td>3차</td><td>—</td><td>게이트 통과 · 경고 0 · validate 통과</td><td>완료</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h3>"MCP 누락" 사례가 주는 교훈</h3>
+        <p style="margin:0 0 8px">kordoc 4.24.0의 <code>stripLawCodes</code> 정규식 <code>[가-힣A-Za-z·]*\s*MCP\s*(?:조회|호출|응답)?</code> 이 원래는 "법령 MCP 조회" 같은 AI 작업 흔적을 지우려는 것인데, 본문에 쓴 MCP도 앞 단어와 함께 지웁니다.</p>
+        <p style="margin:0"><b>도구는 틀릴 수 있다 → 결과를 눈으로 확인하는 단계(render)를 꼭 넣는다.</b> 오늘 강의의 "사람이 최종 확인" 원칙의 실제 사례입니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+<footer>실행 기록: 2026. 10. 21. kordoc 4.24.0 CLI로 같은 기능(parse · lint · generate · render · validate)을 실제 실행한 로그와 결과 이미지입니다. 도구 호출 입력값은 MCP 도구 형식으로 단순화해 표시했습니다.</footer>
+<div id="lb"><img alt=""></div>
+
+<script>
+const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const hl = s => esc(s)
+  .replace(/"([^"\n]+?)"(\s*:)/g,'<span class="k">"$1"</span>$2')
+  .replace(/⚠[^\n]*/g,m=>'<span class="w">'+m+'</span>')
+  .replace(/(✓[^\n]*|게이트 통과[^\n]*)/g,m=>'<span class="g">'+m+'</span>');
+
+const PROMPT = document.getElementById('ptext').textContent;
+
+// 각 단계: chat / log / doc / s(Tool Calling 단계 강조)
+const STEPS = [
+ {s:1, chat:{t:'user', h:'<div class="who">나</div><pre>'+esc(PROMPT)+'</pre>'}},
+ {s:2, chat:{t:'think', h:'<div class="who">AI 생각</div>강의 자료부터 읽어야겠다. pptx는 kordoc의 parse_document로 읽을 수 있다.'},
+  log:{t:'use', name:'parse_document', badge:'② tool_use', body:'{\n  "file_path": "lecture.pptx"\n}'}},
+ {s:3, log:{t:'res', name:'parse_document 결과', badge:'③ tool_result', body:'[kordoc] lecture.pptx ... OK\n  → lecture.md (1,751줄 · 슬라이드 43장 · 발표자 노트 포함)\n\n# 발췌\n오늘의 지도\n01 왜 지금 · 손이 없는 천재, LLM · 5분\n02 Tool Calling · AI가 도구를 쓰는 원리 · 12분\n03 MCP · 도구를 꽂는 표준 포트 · 12분\n04 GitHub · 맥락을 쌓는 문서철 · 도구 창고 · 15분\n05 시연 · kordoc + claw-hwp로 보고서 만들기 · 15분+'}},
+ {s:4, chat:{t:'think', h:'<div class="who">AI 생각</div>파트별 시간을 뽑았다 (5·12·12·15·15분, 마무리 6분 → 합계 65분). 요청한 구성대로 1차 원고를 쓰고, 일시·장소는 "추후 확정"으로 둔다.'},
+  doc:{html:'<p class="docmeta"><span class="chip gray">1차 원고 (Markdown)</span></p><pre style="text-align:left;white-space:pre-wrap;font:13px/1.6 Consolas,monospace;background:#F8FAFC;border:1px solid var(--line);border-radius:8px;padding:12px"># AI 활용 실무교육 강의계획\n\n&gt; 생성형 AI를 질의응답 수준을 넘어 문서 작업 도구로\n  활용하도록 Tool Calling·MCP·GitHub 실무교육을 운영하고자 함\n\n## 추진 배경\n- 생성형 AI를 질의응답 위주로 사용하여 결과를 한글 문서로 옮기는 수작업 반복\n- 도구 호출(Tool Calling)과 MCP 표준 확산으로 …\n- 공무원이 공개한 한글 문서 도구(kordoc, claw-hwp)로 …\n\n## 교육 개요 …\n## 교육 내용 (표 7행) …\n## 기대 효과 …\n## 향후 계획 …</pre>'}},
+ {s:2, chat:{t:'think', h:'<div class="who">AI 생각</div>만들기 전에 공문서 게이트로 먼저 검수하자.'},
+  log:{t:'use', name:'lint_document', badge:'② tool_use', body:'{\n  "file_path": "plan.md",\n  "preset": "보고서",\n  "gate": true\n}'}},
+ {s:3, log:{t:'res', bad:true, name:'lint_document 결과 — 게이트 미통과', badge:'③ tool_result', body:'표기법 검수: 위반 0건\n윤문 검수: 위반 0건\n구성 검수: 위반 2건 (warning 2)\n ⚠ L5 LOGIC_BASIS_NO_FACT "추진 배경" — 배경·현황 장에 사실(수치·법령·지시·날짜)이 없음\n ⚠ L30 LOGIC_EFFECT_VAGUE "기대 효과" — 기대효과에 목표치가 없음\n문체 검수: 위반 0건\n게이트 미통과'}},
+ {s:2, chat:{t:'think', h:'<div class="who">AI 생각</div>구성 지적 2건. 일단 HWPX로 만들어서 분량과 모양부터 같이 확인하자.'},
+  log:{t:'use', name:'generate_document', badge:'② tool_use', body:'{\n  "markdown_path": "plan.md",\n  "preset": "보고서",\n  "output": "plan.hwpx"\n}'}},
+ {s:3, log:{t:'res', bad:true, name:'generate_document 결과 — 경고 4건', badge:'③ tool_result', body:'HWPX 생성 (공문서:report) → plan.hwpx (95,339 bytes)\n ⚠ □ 항목이 한 줄에 담기지 않아 두 줄로 꺾입니다 (4건)\n   "생성형 AI를 질의응답 위주로 사용하여 결과를 한글 문…"\n   "도구 호출(Tool Calling)표준 확산으로 AI가…"\n   "공무원이 공개한 한글 문서 도구(kordoc, claw…"\n   "교육 후 4주 실천 과제 안내(GitHub 가입, 에이…"'}},
+ {s:2, log:{t:'use', name:'render_document', badge:'② tool_use', body:'{\n  "file_path": "plan.hwpx",\n  "format": "png"\n}'}},
+ {s:3, log:{t:'res', bad:true, name:'render_document 결과 — 2쪽', badge:'③ tool_result', body:'렌더 png (2페이지 중 2건, 텍스트 65 · 표 8)\n → page_001.png, page_002.png'},
+  doc:{html:'<p class="docmeta"><span class="chip red">1차 · 2쪽</span><span class="chip amber">게이트 미통과</span><span class="chip red">MCP 글자 누락</span></p><div class="docstack"><img src="assets/v1_p1.png" class="zoom" alt="1차 1쪽"><div class="doclabel">1쪽 — 요약 상자 "Tool·GitHub", 배경 "(Tool Calling)표준": MCP가 빠짐</div><img src="assets/v1_p2.png" class="zoom" alt="1차 2쪽"><div class="doclabel">2쪽 — 표와 뒷부분이 넘어감, 향후계획 "설치연결"</div></div>'}},
+ {s:4, chat:{t:'alert', h:'<div class="who">AI 생각 — 원고와 렌더 대조</div>렌더 이미지를 원고와 대조해 보니 <b>본문의 "MCP"가 앞 단어와 함께 사라졌다</b>.<br>· 요약 상자: "Tool Calling·MCP·GitHub" → "Tool·GitHub"<br>· 배경: "(Tool Calling)과 MCP 표준" → "(Tool Calling)표준"<br>· 향후 계획: "에이전트 설치, MCP 연결" → "에이전트 설치연결"<br>표 안의 MCP는 정상. kordoc 4.24.0의 정리 규칙(stripLawCodes)이 "○○ MCP 조회" 같은 작업 흔적을 지우는 정규식인데 범위가 넓어서 생긴 문제로 보인다.'}},
+ {s:4, chat:{t:'ai', h:'<div class="who">AI 수정 계획</div><table class="mini"><tr><th>문제</th><th>조치</th></tr><tr><td>배경에 사실 없음</td><td>"2025. 12. 리눅스 재단 이관" 날짜 사실 추가</td></tr><tr><td>효과에 목표치 없음</td><td>"4주 실천 과제 완료율 50% 이상" 목표 추가</td></tr><tr><td>한 줄 초과 4건</td><td>□ 항목을 짧게</td></tr><tr><td>MCP 글자 누락</td><td>본문은 "도구 연결 표준"으로 표기 (표 안은 그대로)</td></tr></table>'}},
+ {s:2, log:{t:'use', name:'lint_document', badge:'② tool_use', body:'{\n  "file_path": "plan_v2.md",\n  "preset": "보고서",\n  "gate": true\n}'}},
+ {s:3, log:{t:'res', name:'lint_document 결과 — 게이트 통과', badge:'③ tool_result', body:'표기법 0 · 윤문 0 · 구성 0 · 문체 0\n게이트 통과'}},
+ {s:2, log:{t:'use', name:'generate_document → render_document', badge:'② tool_use', body:'{ "markdown_path": "plan_v2.md", "preset": "보고서", "gate": true }\n{ "file_path": "plan_v2.hwpx", "format": "png" }'}},
+ {s:3, log:{t:'res', bad:true, name:'render_document 결과 — 아직 2쪽', badge:'③ tool_result', body:'게이트 통과 (표기법·문체·윤문·구성)\nHWPX 생성 → plan_v2.hwpx\n렌더 png (2페이지 중 2건)\n ⚠ 2쪽에 □ 항목 2줄만 넘어감'},
+  doc:{html:'<p class="docmeta"><span class="chip green">게이트 통과</span><span class="chip red">2쪽 (2줄 넘침)</span></p><img src="assets/v2_p2.png" class="zoom" alt="2차 2쪽"><div class="doclabel">2차 원고의 2쪽 — 마지막 2줄만 넘어감</div>'}},
+ {s:4, chat:{t:'think', h:'<div class="who">AI 생각</div>딱 2줄 넘친다. 중복되는 기대효과 1줄, 배경 1줄을 정리하면 1쪽에 들어간다.'},
+  log:{t:'use', name:'generate_document → render_document → validate', badge:'② tool_use', body:'{ "markdown_path": "plan_v3.md", "preset": "보고서", "gate": true }\n{ "file_path": "plan_v3.hwpx", "format": "png" }\n{ "file_path": "plan_v3.hwpx" }'}},
+ {s:3, log:{t:'res', name:'결과 — 1쪽 완성', badge:'③ tool_result', body:'게이트 통과\n{"output":"plan_v3.hwpx","preset":"report","bytes":91523,"warnings":[]}\n렌더 png (1페이지 중 1건, 텍스트 45 · 표 7)\n✓ 구조 검증 통과 (엔트리 6개): plan_v3.hwpx'},
+  doc:{html:'<p class="docmeta"><span class="chip green">1쪽</span><span class="chip green">게이트 통과</span><span class="chip green">경고 0</span><span class="chip green">구조 검증 통과</span></p><img src="assets/v3_p1.png" class="zoom" alt="최종 1쪽"><div class="doclabel">최종본 — 강의계획.hwpx</div>'}},
+ {s:4, chat:{t:'ok', h:'<div class="who">AI 최종 답변</div>강의계획 1쪽 보고서를 만들었어요 (강의계획.hwpx).<table class="mini"><tr><th>차수</th><th>고친 이유</th></tr><tr><td>1차 → 2차</td><td>게이트 지적 2건, 한 줄 초과 4건, MCP 글자 누락</td></tr><tr><td>2차 → 3차</td><td>2줄 넘침 → 1쪽으로 정리</td></tr></table><div style="margin-top:8px">확인 필요: 일시·장소 "추후 확정", 목표치 "완료율 50%"는 제가 제안한 값이에요.</div>'}}
+];
+
+const chat = document.getElementById('chat'), log = document.getElementById('log'), doc = document.getElementById('doc');
+let cur = 0, timer = null;
+
+function callHTML(l){
+  return `<div class="call ${l.t}${l.bad?' bad':''}"><div class="hd">${l.t==='use'?'🔧 tool_use':'📦 tool_result'} · ${esc(l.name)}<span class="badge">${l.badge}</span></div><pre>${hl(l.body)}</pre></div>`;
+}
+function render(n){
+  chat.innerHTML=''; log.innerHTML=''; let lastDoc=null;
+  for(let i=0;i<n;i++){
+    const st=STEPS[i];
+    if(st.chat) chat.insertAdjacentHTML('beforeend',`<div class="msg ${st.chat.t}">${st.chat.h}</div>`);
+    if(st.log) log.insertAdjacentHTML('beforeend',callHTML(st.log));
+    if(st.doc) lastDoc=st.doc;
+  }
+  if(!log.innerHTML) log.innerHTML='<div class="empty">AI가 도구를 부르면 여기에 쌓입니다</div>';
+  doc.innerHTML = lastDoc ? lastDoc.html : '<div class="empty">아직 만든 문서가 없습니다</div>';
+  chat.scrollTop=chat.scrollHeight; log.scrollTop=log.scrollHeight;
+  document.getElementById('bar').style.width = (n/STEPS.length*100)+'%';
+  document.getElementById('stepno').textContent = n+' / '+STEPS.length;
+  document.getElementById('prev').disabled = n===0;
+  document.getElementById('next').disabled = n===STEPS.length;
+  const s = n? STEPS[n-1].s : 0;
+  document.querySelectorAll('#strip span[data-s]').forEach(e=>e.classList.toggle('on', +e.dataset.s===s));
+  bindZoom();
+}
+function go(n){ cur=Math.max(0,Math.min(STEPS.length,n)); render(cur); if(cur===STEPS.length) stopAuto(); }
+function stopAuto(){ clearInterval(timer); timer=null; document.getElementById('auto').textContent='▶ 자동 재생'; }
+function toggleAuto(){ if(timer){stopAuto();return;} if(cur===STEPS.length) go(0); document.getElementById('auto').textContent='⏸ 일시정지'; timer=setInterval(()=>go(cur+1),3200); go(cur+1); }
+document.getElementById('next').onclick=()=>go(cur+1);
+document.getElementById('prev').onclick=()=>go(cur-1);
+document.getElementById('first').onclick=()=>{stopAuto();go(0)};
+document.getElementById('auto').onclick=toggleAuto;
+document.getElementById('concept').onchange=e=>document.body.classList.toggle('concept',e.target.checked);
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('play').classList.contains('on')) return;
+  if(e.key==='ArrowRight'){go(cur+1);e.preventDefault()}
+  else if(e.key==='ArrowLeft'){go(cur-1);e.preventDefault()}
+  else if(e.key===' '){toggleAuto();e.preventDefault()}
+});
+document.querySelectorAll('nav.tabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id===b.dataset.tab));
+  bindZoom();
+});
+document.getElementById('copybtn').onclick=async e=>{
+  try{await navigator.clipboard.writeText(PROMPT);e.target.textContent='복사됨 ✓';}catch{e.target.textContent='직접 선택해서 복사';}
+  setTimeout(()=>e.target.textContent='프롬프트 복사',1800);
+};
+const lb=document.getElementById('lb');
+function bindZoom(){ document.querySelectorAll('img.zoom').forEach(im=>im.onclick=()=>{lb.querySelector('img').src=im.src;lb.style.display='flex';}); }
+lb.onclick=()=>lb.style.display='none';
+go(0);
+</script>
+</body>
+</html>
