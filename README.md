@@ -13,5 +13,6 @@ AI 활용 실무교육(Tool Calling · MCP · GitHub) 시연용 페이지입니�
 | ① 시연 재생 | 실제 실행 로그를 대화 · 도구 호출(tool_use / tool_result) · 문서 미리보기로 단계별 재생 (→ / ← / Space) |
 | ② 프롬프트 | 라이브 시연에 그대로 쓰는 프롬프트 |
 | ③ 결과물 | 최종 HWPX · 원고 내려받기, 고친 이력 |
+| ④ 다음 시간에 | 같은 방법을 키워 만든 제주 공약·의회 대시보드(Gongyak) 제작 과정 — gongyak.html |
 
 `files/lecture-plan.hwpx` 는 kordoc 보고서 프리셋으로 생성한 실제 산출물입니다.

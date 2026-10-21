@@ -113,6 +113,7 @@ footer{color:var(--gray);font-size:12.5px;text-align:center;padding:20px}
     <button data-tab="play" class="on">① 시연 재생</button>
     <button data-tab="prompt">② 프롬프트</button>
     <button data-tab="result">③ 결과물</button>
+    <a href="gongyak.html" style="color:#fff;background:#16406f;border:1px solid #F59E0B;border-radius:999px;padding:7px 16px;font-size:14px;text-decoration:none">④ 다음 시간에 →</a>
   </nav>
 </header>
 
@@ -210,6 +211,11 @@ footer{color:var(--gray);font-size:12.5px;text-align:center;padding:20px}
         <p style="margin:0 0 8px">kordoc 4.24.0의 <code>stripLawCodes</code> 정규식 <code>[가-힣A-Za-z·]*\s*MCP\s*(?:조회|호출|응답)?</code> 이 원래는 "법령 MCP 조회" 같은 AI 작업 흔적을 지우려는 것인데, 본문에 쓴 MCP도 앞 단어와 함께 지웁니다.</p>
         <p style="margin:0"><b>도구는 틀릴 수 있다 → 결과를 눈으로 확인하는 단계(render)를 꼭 넣는다.</b> 오늘 강의의 "사람이 최종 확인" 원칙의 실제 사례입니다.</p>
       </div>
+      <a class="card" href="gongyak.html" style="display:block;text-decoration:none;background:#0B2545;color:#fff;border-color:#0B2545">
+        <div style="color:#F59E0B;font-weight:800;font-size:13px">NEXT · 다음 시간에</div>
+        <div style="font-size:19px;font-weight:800;margin:4px 0">보고서 1장 → 매일 스스로 갱신되는 대시보드</div>
+        <div style="color:#CBD5E1;font-size:14px">같은 방법을 키워 4개월 동안 만든 제주 공약·의회 대시보드 이야기 →</div>
+      </a>
     </div>
   </div>
 </section>
@@ -309,6 +315,8 @@ const lb=document.getElementById('lb');
 function bindZoom(){ document.querySelectorAll('img.zoom').forEach(im=>im.onclick=()=>{lb.querySelector('img').src=im.src;lb.style.display='flex';}); }
 lb.onclick=()=>lb.style.display='none';
 go(0);
+const hashTab = location.hash.replace('#','');
+if (['play','prompt','result'].includes(hashTab)) document.querySelector(`nav.tabs button[data-tab="${hashTab}"]`).click();
 </script>
 </body>
 </html>

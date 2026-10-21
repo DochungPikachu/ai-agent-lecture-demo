@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>다음 시간에 · 같은 방법을 키우면 — Gongyak 대시보드</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{--navy:#0B2545;--ink:#1F2937;--teal:#0E9F9A;--teal-l:#DDF3F2;--amber:#F59E0B;--amber-l:#FEF3C7;--gray:#6B7280;--line:#D7DEE7;--bg:#F4F6F9;--red:#DC2626;--purple:#6D28D9;--purple-l:#EDE9FE}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Pretendard,"Malgun Gothic",system-ui,sans-serif;line-height:1.55}
+a{color:var(--teal)}
+header{background:var(--navy);color:#fff;padding:18px 28px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;border-left:8px solid var(--amber)}
+header h1{font-size:22px;margin:0;font-weight:800}
+header .sub{color:#CBD5E1;font-size:14px}
+nav.tabs{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+nav.tabs a{color:#CBD5E1;border:1px solid #33507a;border-radius:999px;padding:7px 16px;font-size:14px;text-decoration:none}
+nav.tabs a.on{background:var(--amber);color:#fff;border-color:var(--amber);font-weight:700}
+main{max-width:1440px;margin:0 auto;padding:22px 24px 60px}
+.hero{display:grid;grid-template-columns:1.1fr 1fr;gap:22px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:20px}
+@media (max-width:980px){.hero{grid-template-columns:1fr}}
+.kicker{display:inline-block;background:var(--amber-l);color:#92400E;font-weight:800;font-size:13px;border-radius:99px;padding:4px 12px;margin-bottom:10px}
+.hero h2{font-size:32px;line-height:1.25;margin:0 0 10px;color:var(--navy)}
+.hero p{margin:0 0 14px;color:#374151;font-size:16px}
+.hero img{width:100%;border-radius:10px;border:1px solid var(--line);box-shadow:0 8px 26px rgba(11,37,69,.10)}
+.btn{display:inline-block;background:var(--teal);color:#fff;text-decoration:none;font-weight:700;padding:10px 16px;border-radius:10px;margin-right:8px;font-size:14.5px}
+.btn.alt{background:#fff;color:var(--navy);border:1px solid var(--line)}
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px}
+@media (max-width:1100px){.stats{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:600px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.stat b{display:block;font-size:28px;color:var(--teal);line-height:1.2}
+.stat span{font-size:13px;color:var(--gray)}
+.stat.dark{background:var(--navy);border-color:var(--navy)}.stat.dark b{color:var(--amber)}.stat.dark span{color:#CBD5E1}
+.sec-title{font-size:20px;color:var(--navy);margin:26px 0 12px;display:flex;align-items:center;gap:10px}
+.sec-title small{font-size:13px;color:var(--gray);font-weight:500}
+
+/* timeline explorer */
+.explorer{display:grid;grid-template-columns:380px 1fr;gap:16px;align-items:start}
+@media (max-width:980px){.explorer{grid-template-columns:1fr}}
+.tl{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px;max-height:760px;overflow:auto}
+.ms{display:grid;grid-template-columns:72px 1fr;gap:10px;padding:10px 10px;border-radius:10px;cursor:pointer;border:1px solid transparent;position:relative}
+.ms:hover{background:var(--bg)}
+.ms.on{background:var(--teal-l);border-color:#9ED9D6}
+.ms .d{font-weight:800;color:var(--navy);font-size:14px}
+.ms .t{font-size:14.5px;font-weight:700}
+.ms .c{margin-top:3px}
+.tag{display:inline-block;font-size:11px;font-weight:800;border-radius:99px;padding:2px 8px;margin:2px 4px 0 0}
+.tag.tc{background:var(--amber-l);color:#92400E}.tag.mcp{background:var(--purple-l);color:var(--purple)}.tag.gh{background:#E0E7FF;color:#3730A3}.tag.ops{background:#D1FAE5;color:#065F46}.tag.lesson{background:#FEE2E2;color:#991B1B}
+.detail{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 22px;min-height:560px}
+.detail h3{margin:0 0 4px;font-size:22px;color:var(--navy)}
+.detail .when{color:var(--gray);font-size:13.5px;margin-bottom:12px}
+.detail .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0}
+@media (max-width:760px){.detail .cols{grid-template-columns:1fr}}
+.box{background:var(--bg);border-radius:12px;padding:12px 14px;font-size:14.5px}
+.box h4{margin:0 0 6px;font-size:13px;color:var(--gray)}
+.box.ask{background:var(--navy);color:#E5E7EB}.box.ask h4{color:var(--amber)}
+.detail img{width:100%;border:1px solid var(--line);border-radius:8px;cursor:zoom-in;margin-top:4px}
+.navbtns{display:flex;gap:8px;margin-top:12px}
+.navbtns button{font:inherit;font-size:14px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 14px;cursor:pointer}
+.navbtns button.primary{background:var(--teal);border-color:var(--teal);color:#fff;font-weight:700}
+
+/* chart */
+.chartcard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 22px}
+.chart{display:grid;grid-template-columns:repeat(5,1fr);gap:18px;align-items:end;height:250px;margin-top:10px;border-bottom:2px solid var(--line);padding:0 6px}
+.bar{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:0}
+.bar .seg{width:58%;border-radius:6px 6px 0 0;display:flex;align-items:flex-start;justify-content:center;color:#fff;font-weight:800;font-size:12.5px;padding-top:3px;transition:height .8s ease}
+.bar .seg.h{background:var(--navy);border-radius:0}
+.bar .seg.a{background:var(--teal)}
+.months{display:grid;grid-template-columns:repeat(5,1fr);gap:18px;padding:6px 6px 0;text-align:center;font-weight:700;color:var(--navy);font-size:14px}
+.legend{display:flex;gap:16px;font-size:13.5px;color:var(--gray);margin-top:10px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+/* mapping */
+.map{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media (max-width:980px){.map{grid-template-columns:1fr}}
+.mapc{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.mapc .hd{padding:14px 18px;color:#fff;font-weight:800;font-size:18px}
+.mapc .bd{padding:14px 18px;font-size:14.5px}
+.mapc .bd p{margin:0 0 8px}
+.mapc .bd .arrow{color:var(--gray);font-size:13px;margin:6px 0}
+.next{background:linear-gradient(135deg,var(--navy),#16406f);color:#fff;border-radius:16px;padding:24px 28px;margin-top:22px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+@media (max-width:980px){.next{grid-template-columns:1fr}}
+.next h3{grid-column:1/-1;margin:0;font-size:22px}
+.next .n{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:14px 16px}
+.next .n b{color:var(--amber);display:block;margin-bottom:4px}
+.note{font-size:12.5px;color:var(--gray);margin-top:16px}
+#lb{position:fixed;inset:0;background:rgba(11,37,69,.88);display:none;align-items:center;justify-content:center;z-index:50;cursor:zoom-out;padding:20px}
+#lb img{max-height:95vh;max-width:95vw;border-radius:6px;background:#fff}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>다음 시간에 — 같은 방법을 키우면</h1>
+    <div class="sub">보고서 1장을 만든 바로 그 방식으로, 혼자 만든 제주 공약·의회 대시보드</div>
+  </div>
+  <nav class="tabs">
+    <a href="./">① 시연 재생</a>
+    <a href="./#prompt">② 프롬프트</a>
+    <a href="./#result">③ 결과물</a>
+    <a href="gongyak.html" class="on">④ 다음 시간에</a>
+  </nav>
+</header>
+<main>
+
+<section class="hero">
+  <div>
+    <span class="kicker">NEXT · 확장하면 이런 것도</span>
+    <h2>오늘은 보고서 1장.<br>키우면 <span style="color:var(--teal)">매일 스스로 갱신되는 대시보드</span>.</h2>
+    <p>선거 다음 날인 2026. 6. 4. AI 코딩 에이전트와 하루 만에 골격을 만들고, 4개월 동안 탭을 하나씩 늘린 개인 프로젝트입니다. 당선자 공약, 도청 보도자료, 자치법규, 도의회 일정·회의록·의안을 한 화면에서 봅니다.</p>
+    <a class="btn" href="https://dochungpikachu.github.io/Gongyak/" target="_blank" rel="noopener">사이트 열어 보기 ↗</a>
+    <a class="btn alt" href="#explorer">만든 과정 따라가기 ↓</a>
+  </div>
+  <img src="assets/gongyak/candidates.jpg" alt="Gongyak 당선자 화면" class="zoom">
+</section>
+
+<div class="stats">
+  <div class="stat dark"><b>1일</b><span>첫 배포까지 (6. 4.)</span></div>
+  <div class="stat"><b>7개</b><span>탭 (당선자~의원 발의)</span></div>
+  <div class="stat"><b>15,761건</b><span>도청 보도자료 수집 (첫날)</span></div>
+  <div class="stat"><b>1,731건</b><span>자치법규 전문 (10. 18. 기준)</span></div>
+  <div class="stat"><b>500</b><span>커밋 (사람 148 · 자동 318)</span></div>
+  <div class="stat"><b>31</b><span>PR 병합</span></div>
+</div>
+
+<h2 class="sec-title" id="explorer">만든 과정 따라가기 <small>— 날짜를 누르면 그때 AI에게 시킨 일과 결과 화면이 나와요 (← → 키로 이동)</small></h2>
+<div class="explorer">
+  <div class="tl" id="tl"></div>
+  <div class="detail" id="detail"></div>
+</div>
+
+<h2 class="sec-title">사람은 줄고, 자동은 남는다 <small>— 월별 커밋 수 (병합 커밋 제외)</small></h2>
+<div class="chartcard">
+  <div class="chart" id="chart"></div>
+  <div class="months"><div>6월</div><div>7월</div><div>8월</div><div>9월</div><div>10월 (21일까지)</div></div>
+  <div class="legend"><span><i style="background:var(--navy)"></i>사람이 시킨 작업</span><span><i style="background:var(--teal)"></i>자동 갱신 (매일 수집·커밋)</span></div>
+  <p style="margin:12px 0 0;font-size:14.5px">6~7월에 기능을 만들고 나면, 이후엔 <b>작업 스케줄러가 매일 수집 → 커밋 → 배포</b>합니다. GitHub에 쌓인 커밋이 곧 운영 기록입니다.</p>
+</div>
+
+<h2 class="sec-title">오늘 배운 세 가지가 그대로 쓰였다</h2>
+<div class="map">
+  <div class="mapc"><div class="hd" style="background:var(--amber)">Tool Calling</div><div class="bd">
+    <p>"보도자료를 부서별로 모아줘" → AI가 <b>크롤러 스크립트를 쓰고, 직접 실행하고, 결과를 확인</b>하는 루프.</p>
+    <p class="arrow">오늘: parse → lint → generate → render</p>
+    <p>규모만 다를 뿐 같은 생각 → 행동 → 관찰 반복입니다.</p></div></div>
+  <div class="mapc"><div class="hd" style="background:var(--purple)">MCP · kordoc</div><div class="bd">
+    <p>7. 10. 도의회 <b>의사일정 HWP 첨부를 kordoc으로 파싱</b>해 위원회별 세부 안건을 표시.</p>
+    <p class="arrow">오늘: 강의 pptx를 kordoc으로 읽고 HWPX 생성</p>
+    <p>한글 문서가 막히던 자리를 도구 하나가 열어 줍니다.</p></div></div>
+  <div class="mapc"><div class="hd" style="background:var(--navy)">GitHub</div><div class="bd">
+    <p>커밋 500개 · PR 31개로 모든 변경이 남고, <b>GitHub Pages</b>로 무료 공개, 자동 갱신 결과도 커밋으로 기록.</p>
+    <p class="arrow">오늘: 이 시연 페이지도 GitHub Pages</p>
+    <p>저장소가 기억이자 배포 창구입니다.</p></div></div>
+</div>
+
+<section class="next">
+  <h3>다음 시간 예고 (후보)</h3>
+  <div class="n"><b>① 자료를 모으는 AI</b>공개 사이트의 보도자료·법령·회의록을 크롤러로 모아 파일로 쌓기</div>
+  <div class="n"><b>② 화면으로 보여 주는 AI</b>모은 자료를 검색·필터가 되는 대시보드로 만들고 GitHub Pages에 배포</div>
+  <div class="n"><b>③ 알아서 굴러가게</b>매일 갱신 자동화 + 실패해도 데이터를 망가뜨리지 않는 검증</div>
+</section>
+
+<p class="note">※ 공개 사이트 화면과 저장소 이력(커밋 날짜·메시지·건수, 2026. 10. 21. 집계)을 바탕으로 정리했습니다. 소스 저장소는 비공개입니다. 사이트는 공공기관의 공식 서비스가 아닌 개인 비영리 참고용 페이지입니다.</p>
+</main>
+<div id="lb"><img alt=""></div>
+
+<script>
+const MS = [
+ {d:'6. 4.', t:'첫날: 골격부터 배포까지', img:'candidates', tags:['gh','tc'],
+  ask:'제주 6.3 지방선거 당선자를 한눈에 보는 정적 사이트를 만들어줘. 당선자 45명 도의원 명단, 성별·직업까지. GitHub Pages로 배포해.',
+  did:'정적 사이트 골격 → 당선자 명단 확정 → Pages 배포 워크플로 → 조직도 과별 보도자료 추적, 공약 상세 펼침',
+  num:'첫 PR이 AI 코딩 에이전트 작업 브랜치에서 병합됨. 같은 날 PR 10개 이상'},
+ {d:'6. 4.', t:'도청 보도자료 15,761건 수집', img:'news', tags:['tc'],
+  ask:'제주도청 보도자료 전체를 긁어서 실·과별로 정리해줘. 다음부터는 새로 나온 것만 받게 해줘.',
+  did:'공식 보도자료 직접 크롤링 → 실과별 마크다운 파일로 저장 → 증분 수집(--incremental) 옵션 추가',
+  num:'보도자료 15,761건 · 부서별 매핑'},
+ {d:'6. 5.', t:'자치법규 탭 + 주간 자동 동기화', img:'laws', tags:['gh','ops'],
+  ask:'제주 자치법규 전문을 넣고 실·과별로 모아 보게 해줘. 매주 자동으로 최신화해.',
+  did:'자치법규 1,714건 전문 수록 → 실·과별 모아보기(국 안 과 2단 접기) → 주간 자동 동기화 워크플로',
+  num:'6. 7. 첫 자동 갱신 커밋 · 현재 1,731건'},
+ {d:'6. 26.', t:'의회일정 탭: 연간 일정 + 상임위 크롤러', img:'schedule', tags:['tc'],
+  ask:'도의회 연간 회기 일정이랑 상임위 일정도 붙여줘. 사이트 구조를 직접 확인해서 파서를 맞춰.',
+  did:'연간 의회운영 기본일정 → 상임위 일정 크롤러 → 실제 마크업 기준으로 파서 확정 + 페이지네이션',
+  num:'현재 안건 1,041건 · 결과 필터(원안가결·수정가결·보고 등)'},
+ {d:'7. 2.~3.', t:'회의록을 질의응답 스레드로', img:'officials', tags:['tc'],
+  ask:'회의록에서 의원 질문과 실·국장 답변을 묶어서, 국장별로 볼 수 있게 해줘. 주제 라벨도 달아줘.',
+  did:'문답을 대화 묶음(스레드)으로 → 과장 단독 답변을 조직도로 소속 국장에 귀속 → AI 주제 라벨 690건',
+  num:'실국장 발언 · 의원 질문 탭 추가 (상임위별 그룹)'},
+ {d:'7. 6.', t:'매일 알아서 갱신되게', img:null, tags:['ops','gh'],
+  ask:'도의회 사이트가 GitHub 서버에서 막히니까, 내 PC에서 매일 돌리는 자동 갱신 스크립트로 바꿔줘.',
+  did:'로컬 자동 갱신 스크립트 → Windows 작업 스케줄러 매일 실행 → 수집·커밋·푸시',
+  num:'자동 갱신 커밋 누적 318개 (10. 21. 기준)'},
+ {d:'7. 7.', t:'의원 발의 탭', img:'bills', tags:['tc'],
+  ask:'의원 명단이랑 의안정보도 자동 수집해서, 의원별 발의 건수와 가결 건수를 보여줘.',
+  did:'의원 명단·의안정보 자동 수집 → 처리 안건에 제안자 표시 → 의원 발의 탭 + 5분 자유발언',
+  num:'위원회 명단 자동 생성 + 도청 조직도 대조 리포트'},
+ {d:'7. 10.', t:'HWP 첨부를 kordoc으로 읽기', img:'schedule', tags:['mcp'], star:true,
+  ask:'의사일정 첨부가 HWP라서 안건을 못 읽잖아. kordoc으로 파싱해서 위원회별 세부 안건으로 보여줘.',
+  did:'의사일정 HWP 첨부 → kordoc 파싱 → 위원회별 세부 안건 표시',
+  num:'오늘 시연에서 쓴 바로 그 도구'},
+ {d:'7. 21.', t:'멈출 줄 아는 것도 기능', img:null, tags:['lesson'],
+  ask:'회의별 AI 요약을 붙여봤는데 오해 소지가 있어. 빼고, 공식 서비스로 오인될 요소도 없애줘.',
+  did:'회의별 AI 서술 요약 추가 → 같은 날 철회 · 공식 서비스 오인 요소 제거 · 비영리 면책 문구',
+  num:'AI가 만든 문장을 공개할 때는 사람이 책임질 수 있는지부터'},
+ {d:'8. 30.', t:'조직개편 반영 + 42MB → 0.5MB', img:'news', tags:['tc'],
+  ask:'8. 25. 조직개편을 반영하고, 뉴스 탭이 너무 느리니 첫 로딩을 줄여줘.',
+  did:'15실·국·본부 / 67과·담당관 반영 → 키워드 기사 지연 로드',
+  num:'뉴스 탭 초기 로딩 42MB → 0.5MB'},
+ {d:'10. 19.', t:'자동화가 멈췄을 때', img:null, tags:['lesson','ops'],
+  ask:'10월 들어 의회 데이터가 안 바뀌는 것 같아. 원인 찾아서 고쳐줘.',
+  did:'로그·마커 확인 → 원격 충돌로 pull 중단 발견 → 백업 후 복구 → 일정 페이지 상한 확대 → 의안 수집 실패 시 3회 재시도 후 기존 파일 보존',
+  num:'과거엔 일부만 받고 덮어써서 12대 의안 1,201건이 500건으로 줄었던 문제를 차단'}
+];
+const TAGN={tc:'Tool Calling',mcp:'MCP · kordoc',gh:'GitHub',ops:'자동화',lesson:'교훈'};
+const tl=document.getElementById('tl'), det=document.getElementById('detail');
+let idx=0;
+tl.innerHTML = MS.map((m,i)=>`<div class="ms" data-i="${i}"><div class="d">${m.d}</div><div><div class="t">${m.star?'★ ':''}${m.t}</div><div class="c">${m.tags.map(t=>`<span class="tag ${t}">${TAGN[t]}</span>`).join('')}</div></div></div>`).join('');
+function show(i){
+  idx=(i+MS.length)%MS.length; const m=MS[idx];
+  tl.querySelectorAll('.ms').forEach((e,k)=>e.classList.toggle('on',k===idx));
+  tl.querySelectorAll('.ms')[idx].scrollIntoView({block:'nearest'});
+  det.innerHTML = `<h3>${m.star?'★ ':''}${m.t}</h3><div class="when">2026. ${m.d} · ${m.tags.map(t=>`<span class="tag ${t}">${TAGN[t]}</span>`).join('')}</div>
+   <div class="cols"><div class="box ask"><h4>이렇게 시켰다 (커밋 기록으로 재구성한 요지)</h4>"${m.ask}"</div><div class="box"><h4>AI가 한 일</h4>${m.did}</div></div>
+   <div class="box" style="background:var(--amber-l)"><h4>결과</h4><b>${m.num}</b></div>
+   ${m.img?`<img src="assets/gongyak/${m.img}.jpg" alt="" class="zoom">`:`<div class="box" style="margin-top:12px;text-align:center;color:var(--gray);padding:40px">화면 변화가 아닌 운영 작업입니다</div>`}
+   <div class="navbtns"><button id="pv">◀ 이전</button><button id="nx" class="primary">다음 ▶</button><span style="margin-left:auto;font-size:13px;color:var(--gray);align-self:center">${idx+1} / ${MS.length}</span></div>`;
+  document.getElementById('pv').onclick=()=>show(idx-1);
+  document.getElementById('nx').onclick=()=>show(idx+1);
+  bindZoom();
+}
+tl.querySelectorAll('.ms').forEach(e=>e.onclick=()=>show(+e.dataset.i));
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')show(idx+1);if(e.key==='ArrowLeft')show(idx-1);});
+show(0);
+
+// chart
+const DATA=[[69,30],[68,95],[6,75],[3,70],[2,48]], MAX=170;
+const ch=document.getElementById('chart');
+ch.innerHTML = DATA.map(([h,a])=>`<div class="bar"><div class="seg a" data-h="${a}" style="height:0">${a}</div><div class="seg h" data-h="${h}" style="height:0">${h>=10?h:''}</div></div>`).join('');
+const io=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting){ch.querySelectorAll('.seg').forEach(s=>s.style.height=(s.dataset.h/MAX*100)+'%');io.disconnect();}})});
+io.observe(ch);
+
+const lb=document.getElementById('lb');
+function bindZoom(){document.querySelectorAll('img.zoom').forEach(im=>im.onclick=()=>{lb.querySelector('img').src=im.src;lb.style.display='flex';});}
+lb.onclick=()=>lb.style.display='none';
+bindZoom();
+</script>
+</body>
+</html>
