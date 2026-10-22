@@ -101,6 +101,32 @@ footer{color:var(--gray);font-size:12.5px;text-align:center;padding:20px}
 /* lightbox */
 #lb{position:fixed;inset:0;background:rgba(11,37,69,.85);display:none;align-items:center;justify-content:center;z-index:50;cursor:zoom-out;padding:20px}
 #lb img{max-height:95vh;max-width:95vw;background:#fff;border-radius:6px}
+
+/* Teaching overlay: tool loop is not a final answer */
+.strip{display:block!important;padding:14px 18px;background:#fff}
+body:not(.concept) .strip,body:not(.concept) .coach{display:none!important}
+.flow-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;font-size:12px;color:var(--gray)}
+.flow-head b{font-size:15px}.flow-track{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.flow-track .node{padding:8px 13px;border:1px solid var(--line);border-radius:10px;color:var(--gray);background:#F8FAFC;font-weight:650;font-size:13px}
+.flow-track .node.on{background:var(--navy);color:white;border-color:var(--navy);box-shadow:0 0 0 3px #0B254514}
+.flow-track .node[data-s="4"].on{background:#047857;border-color:#047857}
+.flow-loop{display:flex;align-items:center;gap:8px;border:2px solid #F2CD78;background:#FFFBEB;border-radius:12px;padding:6px 9px;position:relative}
+.flow-loop small{font-size:11px;color:#92400E;font-weight:700}.flow-loop .node.on small{color:#FFF}
+.flow-track .arrow{background:none;padding:0;color:#9CA3AF}.flow-note{font-size:12px;color:#64748B;margin-top:9px}
+.flow-track .node[data-s="review"].on{background:#7C3AED;border-color:#7C3AED}
+.coach{display:flex;gap:16px;align-items:center;padding:16px 20px;margin-bottom:14px;border:1px solid #C9D7E6;border-radius:14px;background:#EDF3F9;min-height:128px;transition:background .25s}
+.coach[data-phase="request"]{background:#FFFBEB;border-color:#FCD34D}.coach[data-phase="result"]{background:#EDF9F8;border-color:#99DCD6}.coach[data-phase="review"]{background:#F5F0FF;border-color:#C4B5FD}.coach[data-phase="final"]{background:#ECFDF5;border-color:#6EE7B7}
+.coach-avatar{flex:0 0 66px;width:66px;height:66px;border-radius:18px;background:var(--navy);color:white;font-weight:800;display:grid;place-items:center;font-size:18px}
+.coach[data-phase="result"] .coach-avatar{background:#0F766E;font-size:13px}.coach[data-phase="review"] .coach-avatar{background:#7C3AED}.coach[data-phase="final"] .coach-avatar{background:#047857}
+.coach-content{flex:1;min-width:0}.coach-meta{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:#64748B;margin-bottom:4px}.coach-meta strong{color:var(--navy)}
+.coach-bubble{position:relative;background:white;border-radius:4px 16px 16px 16px;padding:10px 16px;box-shadow:0 2px 6px #0B254509;font-size:19px;font-weight:750;color:var(--navy);animation:pop .25s ease}
+.coach-bubble:before{content:'';position:absolute;left:-8px;top:0;border-top:10px solid white;border-left:9px solid transparent}
+.coach-explain{font-size:13px;margin-top:6px;color:#475569}.coach-count{flex:0 0 125px;border-left:1px solid #C9D7E6;padding-left:18px;color:#64748B;font-size:12px}.coach-count b{display:block;font-size:29px;color:var(--navy);line-height:1.2}
+.wow-jumps{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:12px;color:var(--gray);font-size:12px}.wow-jumps button{font:inherit;font-weight:650;background:white;border:1px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer;color:var(--navy)}.wow-jumps button:hover{background:var(--amber-l);border-color:var(--amber)}
+.col{max-height:calc(100vh - 435px);min-height:340px}.col.spot{border-color:var(--teal);box-shadow:0 0 0 2px #0E9F9A25}
+.msg.latest{border-left:4px solid var(--teal)}.call.latest{box-shadow:0 0 0 2px #F59E0B40}.msg .stage-tag{display:block;font-size:11px;font-weight:750;color:#7C3AED;margin-bottom:4px}.msg.ok .stage-tag{color:#047857}
+@media(max-width:800px){.coach{padding:12px;gap:10px}.coach-count{display:none}.coach-avatar{flex-basis:44px;width:44px;height:44px;font-size:14px;border-radius:12px}.coach-bubble{font-size:16px}.flow-loop{flex-wrap:wrap}.flow-track{gap:5px}.flow-track .node{font-size:11px;padding:6px 8px}.col{min-height:300px;max-height:540px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body class="concept">
@@ -129,15 +155,22 @@ footer{color:var(--gray);font-size:12.5px;text-align:center;padding:20px}
     <label class="tog"><input type="checkbox" id="concept" checked> 개념 표시</label>
   </div>
   <div class="strip" id="strip">
-    <b>Tool Calling 4단계</b>
-    <span data-s="1">1 컨텍스트 조립</span>
-    <span data-s="2">2 AI의 도구 선택 (tool_use)</span>
-    <span data-s="3">3 프로그램이 실행 (tool_result)</span>
-    <span data-s="4">4 최종 답변</span>
-    <span style="margin-left:auto;background:none;color:var(--gray)">키보드: → 다음 · ← 이전 · Space 자동</span>
+    <div class="flow-head"><b>끝날 때까지 2 ↔ 3 반복, 4는 맨 마지막</b><div>→ 다음 · ← 이전 · Space 자동</div></div>
+    <div class="flow-track">
+      <span class="node" data-s="1">1 요청·도구 목록 전달</span><span class="arrow">→</span>
+      <div class="flow-loop"><small>작업 중 반복 구간</small><span class="node" data-s="2">2 AI가 도구 요청<br><small>tool_use</small></span><span class="arrow">→</span><span class="node" data-s="3">3 프로그램 실행·결과 반환<br><small>tool_result</small></span><span class="arrow">→</span><span class="node" data-s="review">AI가 결과 확인·재판단<br><small>미완료라면 다시 2로</small></span></div>
+      <span class="arrow">→</span><span class="node" data-s="4">4 완료 후 최종 답변</span>
+    </div>
+    <div class="flow-note">중간 설명은 4가 아닙니다. 도구 결과도 다음 입력에 더해집니다. AI가 확인 후, 미완료면 다시 2로 돌아갑니다.</div>
   </div>
+  <div class="coach" id="coach" data-phase="intro" role="status" aria-live="polite">
+    <div class="coach-avatar" id="coachActor">AI</div>
+    <div class="coach-content"><div class="coach-meta"><strong id="coachLabel"></strong><span>교육용 해설 · 실제 내부 사고 원문이 아닌 재구성</span></div><div class="coach-bubble" id="coachBubble"></div><div class="coach-explain" id="coachExplain"></div></div>
+    <div class="coach-count">도구 요청 장면<b id="loopCount">0 / 7</b><span>여러 호출을 묶은 장면 포함</span></div>
+  </div>
+  <div class="wow-jumps"><span>핵심 장면 바로 보기</span><button type="button" data-jump="6">검수 탈락 → 다시 작업</button><button type="button" data-jump="11">검수기가 놓친 글자 발견</button><button type="button" data-jump="16">검수 통과 ≠ 작업 끝</button><button type="button" data-jump="19">진짜 최종 답변</button></div>
   <div class="grid">
-    <div class="col"><h2><span class="dot" style="background:var(--navy)"></span>대화 · AI의 생각</h2><div class="feed" id="chat"></div></div>
+    <div class="col"><h2><span class="dot" style="background:var(--navy)"></span>대화 · AI의 작업 설명</h2><div class="feed" id="chat"></div></div>
     <div class="col"><h2><span class="dot" style="background:var(--amber)"></span>도구 호출 로그 (tool_use / tool_result)</h2><div class="feed" id="log"><div class="empty">AI가 도구를 부르면 여기에 쌓입니다</div></div></div>
     <div class="col col-doc"><h2><span class="dot" style="background:var(--teal)"></span>문서 미리보기 (render 결과)</h2><div class="docview" id="doc"><div class="empty">아직 만든 문서가 없습니다</div></div></div>
   </div>
@@ -235,45 +268,82 @@ const PROMPT = document.getElementById('ptext').textContent;
 // 각 단계: chat / log / doc / s(Tool Calling 단계 강조)
 const STEPS = [
  {s:1, chat:{t:'user', h:'<div class="who">나</div><pre>'+esc(PROMPT)+'</pre>'}},
- {s:2, chat:{t:'think', h:'<div class="who">AI 생각</div>강의 자료부터 읽어야겠다. pptx는 kordoc의 parse_document로 읽을 수 있다.'},
+ {s:2, chat:{t:'think', h:'<div class="who">AI 작업 설명</div>강의 자료부터 읽어야겠다. pptx는 kordoc의 parse_document로 읽을 수 있다.'},
   log:{t:'use', name:'parse_document', badge:'② tool_use', body:'{\n  "file_path": "lecture.pptx"\n}'}},
  {s:3, log:{t:'res', name:'parse_document 결과', badge:'③ tool_result', body:'[kordoc] lecture.pptx ... OK\n  → lecture.md (1,751줄 · 슬라이드 43장 · 발표자 노트 포함)\n\n# 발췌\n오늘의 지도\n01 왜 지금 · 손이 없는 천재, LLM · 5분\n02 Tool Calling · AI가 도구를 쓰는 원리 · 12분\n03 MCP · 도구를 꽂는 표준 포트 · 12분\n04 GitHub · 맥락을 쌓는 문서철 · 도구 창고 · 15분\n05 시연 · kordoc + claw-hwp로 보고서 만들기 · 15분+'}},
- {s:4, chat:{t:'think', h:'<div class="who">AI 생각</div>파트별 시간을 뽑았다 (5·12·12·15·15분, 마무리 6분 → 합계 65분). 요청한 구성대로 1차 원고를 쓰고, 일시·장소는 "추후 확정"으로 둔다.'},
+ {s:'review', chat:{t:'think', h:'<div class="who">AI 작업 설명</div>파트별 시간을 뽑았다 (5·12·12·15·15분, 마무리 6분 → 합계 65분). 요청한 구성대로 1차 원고를 쓰고, 일시·장소는 "추후 확정"으로 둔다.'},
   doc:{html:'<p class="docmeta"><span class="chip gray">1차 원고 (Markdown)</span></p><pre style="text-align:left;white-space:pre-wrap;font:13px/1.6 Consolas,monospace;background:#F8FAFC;border:1px solid var(--line);border-radius:8px;padding:12px"># AI 활용 실무교육 강의계획\n\n&gt; 생성형 AI를 질의응답 수준을 넘어 문서 작업 도구로\n  활용하도록 Tool Calling·MCP·GitHub 실무교육을 운영하고자 함\n\n## 추진 배경\n- 생성형 AI를 질의응답 위주로 사용하여 결과를 한글 문서로 옮기는 수작업 반복\n- 도구 호출(Tool Calling)과 MCP 표준 확산으로 …\n- 공무원이 공개한 한글 문서 도구(kordoc, claw-hwp)로 …\n\n## 교육 개요 …\n## 교육 내용 (표 7행) …\n## 기대 효과 …\n## 향후 계획 …</pre>'}},
- {s:2, chat:{t:'think', h:'<div class="who">AI 생각</div>만들기 전에 공문서 게이트로 먼저 검수하자.'},
+ {s:2, chat:{t:'think', h:'<div class="who">AI 작업 설명</div>만들기 전에 공문서 게이트로 먼저 검수하자.'},
   log:{t:'use', name:'lint_document', badge:'② tool_use', body:'{\n  "file_path": "plan.md",\n  "preset": "보고서",\n  "gate": true\n}'}},
  {s:3, log:{t:'res', bad:true, name:'lint_document 결과 — 게이트 미통과', badge:'③ tool_result', body:'표기법 검수: 위반 0건\n윤문 검수: 위반 0건\n구성 검수: 위반 2건 (warning 2)\n ⚠ L5 LOGIC_BASIS_NO_FACT "추진 배경" — 배경·현황 장에 사실(수치·법령·지시·날짜)이 없음\n ⚠ L30 LOGIC_EFFECT_VAGUE "기대 효과" — 기대효과에 목표치가 없음\n문체 검수: 위반 0건\n게이트 미통과'}},
- {s:2, chat:{t:'think', h:'<div class="who">AI 생각</div>구성 지적 2건. 일단 HWPX로 만들어서 분량과 모양부터 같이 확인하자.'},
+ {s:2, chat:{t:'think', h:'<div class="who">AI 작업 설명</div>구성 지적 2건. 일단 HWPX로 만들어서 분량과 모양부터 같이 확인하자.'},
   log:{t:'use', name:'generate_document', badge:'② tool_use', body:'{\n  "markdown_path": "plan.md",\n  "preset": "보고서",\n  "output": "plan.hwpx"\n}'}},
  {s:3, log:{t:'res', bad:true, name:'generate_document 결과 — 경고 4건', badge:'③ tool_result', body:'HWPX 생성 (공문서:report) → plan.hwpx (95,339 bytes)\n ⚠ □ 항목이 한 줄에 담기지 않아 두 줄로 꺾입니다 (4건)\n   "생성형 AI를 질의응답 위주로 사용하여 결과를 한글 문…"\n   "도구 호출(Tool Calling)표준 확산으로 AI가…"\n   "공무원이 공개한 한글 문서 도구(kordoc, claw…"\n   "교육 후 4주 실천 과제 안내(GitHub 가입, 에이…"'}},
  {s:2, log:{t:'use', name:'render_document', badge:'② tool_use', body:'{\n  "file_path": "plan.hwpx",\n  "format": "png"\n}'}},
  {s:3, log:{t:'res', bad:true, name:'render_document 결과 — 2쪽', badge:'③ tool_result', body:'렌더 png (2페이지 중 2건, 텍스트 65 · 표 8)\n → page_001.png, page_002.png'},
   doc:{html:'<p class="docmeta"><span class="chip red">1차 · 2쪽</span><span class="chip amber">게이트 미통과</span><span class="chip red">MCP 글자 누락</span></p><div class="docstack"><img src="assets/v1_p1.png" class="zoom" alt="1차 1쪽"><div class="doclabel">1쪽 — 요약 상자 "Tool·GitHub", 배경 "(Tool Calling)표준": MCP가 빠짐</div><img src="assets/v1_p2.png" class="zoom" alt="1차 2쪽"><div class="doclabel">2쪽 — 표와 뒷부분이 넘어감, 향후계획 "설치연결"</div></div>'}},
- {s:4, chat:{t:'alert', h:'<div class="who">AI 생각 — 원고와 렌더 대조</div>렌더 이미지를 원고와 대조해 보니 <b>본문의 "MCP"가 앞 단어와 함께 사라졌다</b>.<br>· 요약 상자: "Tool Calling·MCP·GitHub" → "Tool·GitHub"<br>· 배경: "(Tool Calling)과 MCP 표준" → "(Tool Calling)표준"<br>· 향후 계획: "에이전트 설치, MCP 연결" → "에이전트 설치연결"<br>표 안의 MCP는 정상. kordoc 4.24.0의 정리 규칙(stripLawCodes)이 "○○ MCP 조회" 같은 작업 흔적을 지우는 정규식인데 범위가 넓어서 생긴 문제로 보인다.'}},
- {s:4, chat:{t:'ai', h:'<div class="who">AI 수정 계획</div><table class="mini"><tr><th>문제</th><th>조치</th></tr><tr><td>배경에 사실 없음</td><td>"2025. 12. 리눅스 재단 이관" 날짜 사실 추가</td></tr><tr><td>효과에 목표치 없음</td><td>"4주 실천 과제 완료율 50% 이상" 목표 추가</td></tr><tr><td>한 줄 초과 4건</td><td>□ 항목을 짧게</td></tr><tr><td>MCP 글자 누락</td><td>본문은 "도구 연결 표준"으로 표기 (표 안은 그대로)</td></tr></table>'}},
+ {s:'review', chat:{t:'alert', h:'<div class="who">AI 작업 설명 · 원고와 렌더 대조</div>렌더 이미지를 원고와 대조해 보니 <b>본문의 "MCP"가 앞 단어와 함께 사라졌다</b>.<br>· 요약 상자: "Tool Calling·MCP·GitHub" → "Tool·GitHub"<br>· 배경: "(Tool Calling)과 MCP 표준" → "(Tool Calling)표준"<br>· 향후 계획: "에이전트 설치, MCP 연결" → "에이전트 설치연결"<br>표 안의 MCP는 정상. kordoc 4.24.0의 정리 규칙(stripLawCodes)이 "○○ MCP 조회" 같은 작업 흔적을 지우는 정규식인데 범위가 넓어서 생긴 문제로 보인다.'}},
+ {s:'review', chat:{t:'ai', h:'<div class="who">AI 수정 계획</div><table class="mini"><tr><th>문제</th><th>조치</th></tr><tr><td>배경에 사실 없음</td><td>"2025. 12. 리눅스 재단 이관" 날짜 사실 추가</td></tr><tr><td>효과에 목표치 없음</td><td>"4주 실천 과제 완료율 50% 이상" 목표 추가</td></tr><tr><td>한 줄 초과 4건</td><td>□ 항목을 짧게</td></tr><tr><td>MCP 글자 누락</td><td>본문은 "도구 연결 표준"으로 표기 (표 안은 그대로)</td></tr></table>'}},
  {s:2, log:{t:'use', name:'lint_document', badge:'② tool_use', body:'{\n  "file_path": "plan_v2.md",\n  "preset": "보고서",\n  "gate": true\n}'}},
  {s:3, log:{t:'res', name:'lint_document 결과 — 게이트 통과', badge:'③ tool_result', body:'표기법 0 · 윤문 0 · 구성 0 · 문체 0\n게이트 통과'}},
  {s:2, log:{t:'use', name:'generate_document → render_document', badge:'② tool_use', body:'{ "markdown_path": "plan_v2.md", "preset": "보고서", "gate": true }\n{ "file_path": "plan_v2.hwpx", "format": "png" }'}},
  {s:3, log:{t:'res', bad:true, name:'render_document 결과 — 아직 2쪽', badge:'③ tool_result', body:'게이트 통과 (표기법·문체·윤문·구성)\nHWPX 생성 → plan_v2.hwpx\n렌더 png (2페이지 중 2건)\n ⚠ 2쪽에 □ 항목 2줄만 넘어감'},
   doc:{html:'<p class="docmeta"><span class="chip green">게이트 통과</span><span class="chip red">2쪽 (2줄 넘침)</span></p><img src="assets/v2_p2.png" class="zoom" alt="2차 2쪽"><div class="doclabel">2차 원고의 2쪽 — 마지막 2줄만 넘어감</div>'}},
- {s:4, chat:{t:'think', h:'<div class="who">AI 생각</div>딱 2줄 넘친다. 중복되는 기대효과 1줄, 배경 1줄을 정리하면 1쪽에 들어간다.'},
+ {s:2, chat:{t:'think', h:'<div class="who">AI 작업 설명</div>딱 2줄 넘친다. 중복되는 기대효과 1줄, 배경 1줄을 정리하면 1쪽에 들어간다.'},
   log:{t:'use', name:'generate_document → render_document → validate', badge:'② tool_use', body:'{ "markdown_path": "plan_v3.md", "preset": "보고서", "gate": true }\n{ "file_path": "plan_v3.hwpx", "format": "png" }\n{ "file_path": "plan_v3.hwpx" }'}},
  {s:3, log:{t:'res', name:'결과 — 1쪽 완성', badge:'③ tool_result', body:'게이트 통과\n{"output":"plan_v3.hwpx","preset":"report","bytes":91523,"warnings":[]}\n렌더 png (1페이지 중 1건, 텍스트 45 · 표 7)\n✓ 구조 검증 통과 (엔트리 6개): plan_v3.hwpx'},
   doc:{html:'<p class="docmeta"><span class="chip green">1쪽</span><span class="chip green">게이트 통과</span><span class="chip green">경고 0</span><span class="chip green">구조 검증 통과</span></p><img src="assets/v3_p1.png" class="zoom" alt="최종 1쪽"><div class="doclabel">최종본 — 강의계획.hwpx</div>'}},
  {s:4, chat:{t:'ok', h:'<div class="who">AI 최종 답변</div>강의계획 1쪽 보고서를 만들었어요 (강의계획.hwpx).<table class="mini"><tr><th>차수</th><th>고친 이유</th></tr><tr><td>1차 → 2차</td><td>게이트 지적 2건, 한 줄 초과 4건, MCP 글자 누락</td></tr><tr><td>2차 → 3차</td><td>2줄 넘침 → 1쪽으로 정리</td></tr></table><div style="margin-top:8px">확인 필요: 일시·장소 "추후 확정", 목표치 "완료율 50%"는 제가 제안한 값이에요.</div>'}}
 ];
 
+
+const COACH = [
+ ['intro','안내','관전 포인트','“말은 끝났는데, 일도 끝났을까요?”','다음 버튼으로 따라가 보세요. 2와 3은 여러 번 왕복하고, 4는 완성한 뒤 한 번만 나옵니다.'],
+ ['context','사용자','1 · 작업 시작','“자료를 읽고, 고치고, 1쪽 보고서로 만들어 주세요.”','목표·검수 조건·도구 목록을 AI에 전달합니다. 아직 도구를 실행한 건 아닙니다.'],
+ ['request','AI','2 · 도구 요청','“먼저 PPT를 읽어 주세요.”','AI가 parse_document와 파일 경로를 정합니다. 실제 읽기는 프로그램이 맡습니다.'],
+ ['result','프로그램','3 · 실행 결과 반환','“읽었습니다. 슬라이드 43장과 발표자 노트입니다.”','파일 내용이 AI에게 돌아왔습니다. 자료를 읽은 것일 뿐, 보고서는 아직 완성되지 않았습니다.'],
+ ['review','AI','결과 확인 · 아직 4 아님','“자료는 확보했어요. 이제 초안을 쓰고 검사하겠습니다.”','중간 설명이 나와도 종료가 아닙니다. AI가 결과를 바탕으로 다음 작업을 고릅니다.'],
+ ['request','AI','2 · 다시 도구 요청','“이 초안이 보고서 기준에 맞는지 검사해 주세요.”','자료 읽기 다음에는 검수. 같은 2단계에서 다른 도구를 고를 수 있습니다.'],
+ ['result','프로그램','3 · 문제 발견','“배경 근거와 기대효과 목표치, 두 항목이 부족합니다.”','검수 결과는 ‘끝’이 아니라 다음 판단의 재료입니다. 지적이 있으니 작업을 이어갑니다.'],
+ ['request','AI','2 · 다음 행동 선택','“지적은 기록해 두고, 파일로 만들어 분량도 함께 볼게요.”','이 시연에서는 수정 전 모양까지 확인했습니다. 검수 미통과 문서를 최종본으로 내는 건 아닙니다.'],
+ ['result','프로그램','3 · 생성 결과 반환','“파일은 만들었지만, 긴 항목 네 개가 줄을 넘습니다.”','파일 저장 성공 ≠ 작업 완료. 사용자가 요청한 분량과 모양까지 확인해야 합니다.'],
+ ['request','AI','2 · 눈으로 확인 요청','“문서를 이미지로 펼쳐 보여 주세요.”','render_document가 문서 이미지를 만듭니다. AI는 원고와 이미지도 대조할 수 있습니다.'],
+ ['result','프로그램','3 · 화면으로 드러난 문제','“1쪽이 아니라 2쪽입니다. 이미지를 확인해 보세요.”','문서 미리보기를 보세요. 프로그램이 준 이미지를 바탕으로 AI의 재판단이 이어집니다.'],
+ ['review','AI','원고 대조 · 아직 4 아님','“잠깐, 원고의 MCP 글자가 사라졌어요!”','검수기가 못 잡은 문제를 이미지·원고 대조에서 발견했습니다. 여기서 멈추지 않고 수정으로 돌아갑니다.'],
+ ['review','AI','수정 계획 · 아직 4 아님','“네 가지를 고치고, 다시 검사하겠습니다.”','이 말풍선도 최종 답변이 아닙니다. 수정 계획 다음에는 다시 2 → 3이 이어집니다.'],
+ ['request','AI','2 · 수정 후 재검수','“고친 원고를 다시 검사해 주세요.”','AI가 도구 결과를 받아 행동을 바꿨습니다. 이것이 조건부 반복, 에이전트 루프입니다.'],
+ ['result','프로그램','3 · 검수 통과','“보고서 검수 기준은 통과했습니다.”','통과했어도 끝은 아닙니다. 아직 ‘1쪽’이라는 사용자 조건은 실제 이미지로 확인해야 합니다.'],
+ ['request','AI','2 · 생성과 렌더 요청 묶음','“고친 원고를 파일로 만들고, 쪽수도 확인해 주세요.”','설명을 줄이기 위해 생성 → 렌더 호출을 한 장면으로 묶었습니다. 실제로는 순서대로 실행합니다.'],
+ ['result','프로그램','3 · 통과했는데도 미완성','“검수는 통과. 하지만 마지막 두 줄이 2쪽으로 넘어갑니다.”','검수 통과 ≠ 목표 달성. AI는 ‘1쪽’ 조건을 맞추기 위해 다시 도구를 요청합니다.'],
+ ['request','AI','2 · 마지막 수정·검증 요청 묶음','“중복 두 줄을 줄였어요. 생성·렌더·구조 검증을 해 주세요.”','이 장면은 여러 실행을 묶은 설명입니다. validate는 실제 CLI 검증이며 MCP 도구 이름을 뜻하지 않습니다.'],
+ ['result','프로그램','3 · 완성 조건 충족','“1쪽, 경고 0건, 구조 검증 통과입니다.”','이제 AI가 결과를 확인하고 사용자에게 완료 보고할 차례입니다. 최종 판단과 확인은 사람이 합니다.'],
+ ['final','AI','4 · 여기서 처음 최종 답변','“완성했어요. 파일과 수정 이력, 확인할 사항을 드릴게요.”','요청 → 실행 → 결과 확인을 반복한 뒤에야 4가 나옵니다. AI가 한 번 답했다고 일을 끝낸 게 아닙니다.']
+];
+function updateCoach(n){
+ const [phase,actor,label,bubble,explain]=COACH[n];
+ document.getElementById('coach').dataset.phase=phase;
+ document.getElementById('coachActor').textContent=actor;
+ document.getElementById('coachLabel').textContent=label;
+ const bubbleEl=document.getElementById('coachBubble'); bubbleEl.textContent=bubble;
+ bubbleEl.style.animation='none'; void bubbleEl.offsetWidth; bubbleEl.style.animation='';
+ document.getElementById('coachExplain').textContent=explain;
+ document.getElementById('loopCount').textContent=STEPS.slice(0,n).filter(st=>st.log?.t==='use').length+' / 7';
+ document.querySelectorAll('.grid .col').forEach(e=>e.classList.remove('spot'));
+ const focus=phase==='request'||phase==='result'?1:0;
+ if(n) document.querySelectorAll('.grid .col')[focus].classList.add('spot');
+}
+
 const chat = document.getElementById('chat'), log = document.getElementById('log'), doc = document.getElementById('doc');
 let cur = 0, timer = null;
 
 function callHTML(l){
-  return `<div class="call ${l.t}${l.bad?' bad':''}"><div class="hd">${l.t==='use'?'🔧 tool_use':'📦 tool_result'} · ${esc(l.name)}<span class="badge">${l.badge}</span></div><pre>${hl(l.body)}</pre></div>`;
+  return `<div class="call ${l.t}${l.bad?' bad':''}"><div class="hd">${l.t==='use'?'AI 요청 · tool_use':'프로그램 결과 · tool_result'} · ${esc(l.name)}<span class="badge">${l.badge}</span></div><pre>${hl(l.body)}</pre></div>`;
 }
 function render(n){
   chat.innerHTML=''; log.innerHTML=''; let lastDoc=null;
   for(let i=0;i<n;i++){
     const st=STEPS[i];
-    if(st.chat) chat.insertAdjacentHTML('beforeend',`<div class="msg ${st.chat.t}">${st.chat.h}</div>`);
+    if(st.chat){ const tag=st.s===4?'4 · 최종 답변':(st.chat.t==='user'?'사용자 요청':'작업 중 설명 · 최종 답변 아님'); chat.insertAdjacentHTML('beforeend',`<div class="msg ${st.chat.t}${i===n-1?' latest':''}"><span class="stage-tag">${tag}</span>${st.chat.h}</div>`); }
     if(st.log) log.insertAdjacentHTML('beforeend',callHTML(st.log));
     if(st.doc) lastDoc=st.doc;
   }
@@ -285,9 +355,12 @@ function render(n){
   document.getElementById('prev').disabled = n===0;
   document.getElementById('next').disabled = n===STEPS.length;
   const s = n? STEPS[n-1].s : 0;
-  document.querySelectorAll('#strip span[data-s]').forEach(e=>e.classList.toggle('on', +e.dataset.s===s));
+  document.querySelectorAll('#strip [data-s]').forEach(e=>e.classList.toggle('on', e.dataset.s===String(s)));
+  if(log.lastElementChild && n && STEPS[n-1].log) log.lastElementChild.classList.add('latest');
+  updateCoach(n);
   bindZoom();
 }
+document.querySelectorAll('[data-jump]').forEach(b=>b.onclick=()=>{stopAuto();go(Number(b.dataset.jump));});
 function go(n){ cur=Math.max(0,Math.min(STEPS.length,n)); render(cur); if(cur===STEPS.length) stopAuto(); }
 function stopAuto(){ clearInterval(timer); timer=null; document.getElementById('auto').textContent='▶ 자동 재생'; }
 function toggleAuto(){ if(timer){stopAuto();return;} if(cur===STEPS.length) go(0); document.getElementById('auto').textContent='⏸ 일시정지'; timer=setInterval(()=>go(cur+1),3200); go(cur+1); }
@@ -297,12 +370,13 @@ document.getElementById('first').onclick=()=>{stopAuto();go(0)};
 document.getElementById('auto').onclick=toggleAuto;
 document.getElementById('concept').onchange=e=>document.body.classList.toggle('concept',e.target.checked);
 document.addEventListener('keydown',e=>{
-  if(!document.getElementById('play').classList.contains('on')) return;
+  if(!document.getElementById('play').classList.contains('on') || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName) || (e.key===' ' && /BUTTON|A/.test(e.target.tagName))) return;
   if(e.key==='ArrowRight'){go(cur+1);e.preventDefault()}
   else if(e.key==='ArrowLeft'){go(cur-1);e.preventDefault()}
   else if(e.key===' '){toggleAuto();e.preventDefault()}
 });
 document.querySelectorAll('nav.tabs button').forEach(b=>b.onclick=()=>{
+  stopAuto();
   document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.toggle('on',x===b));
   document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id===b.dataset.tab));
   bindZoom();
